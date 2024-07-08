@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from db.models import init_db
+from routes.api.kanon.kanon import router as api_kanon_router
 from routes.index import router as index_router
 
 
@@ -12,7 +12,8 @@ class ChurchCalendar(FastAPI):
     def init(self):
         self.init_database()
         self.include_router(index_router)
+        self.include_router(api_kanon_router)
 
     @staticmethod
     def init_database():
-        init_db()
+        pass

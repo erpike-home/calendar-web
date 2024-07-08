@@ -1,47 +1,63 @@
+"""
+канон - kanon 
+first troparion, junction, Irmos - ирмос
+theotokion - Богородичен
+troichen - Троичен
+song? - песнь
+chorus - припев
+"""
+
 from datetime import datetime
+from typing import Optional
 
-from peewee import Proxy, Model, DateTimeField, CharField, TextField
-from peewee_migrate import Router
-from playhouse.sqlite_ext import SqliteExtDatabase
-
-from config import DB_FILENAME, MIGRATIONS_DIR
-
-
-db = SqliteExtDatabase(
-    DB_FILENAME,
-    autoconnect=False,
-    pragmas={"foreign_keys": 1}
-)
-db_proxy = Proxy()
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import Field, SQLModel, func
+from sqlmodel.ext.asyncio.session import AsyncSession
+from conf import DB_CONNECTION_STR
 
 
-class BaseModel(Model):
-    class Meta:
-        database = db
-
-    created_at = DateTimeField(default=datetime.utcnow)
-    modified_at = DateTimeField(default=datetime.utcnow)
-
-    def save(self, *args, **kwargs):
-        self.modified_at = datetime.utcnow()
-        return super().save(*args, **kwargs)
+engine = create_async_engine(DB_CONNECTION_STR)
 
 
-class PrayerSection(BaseModel):
-    name = CharField(max_length=125, unique=True)
-    cslavonic_name = CharField(max_length=125, unique=True)
+class BaseModel(SQLModel, table=False):
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    modified_at: datetime = Field(
+        default_factory=datetime.utcnow,
+        nullable=False,
+        sa_column_kwargs={"onupdate": func.now(), "default": func.now()},
+    )
+
+    class Config:
+        orm_mode = True
 
 
-class Prayer(BaseModel):
-    title = CharField(max_length=125, unique=True)
-    text = TextField(null=True)
-
-    cslavonic_title = CharField(max_length=125, unique=True)
-    cslavonic_text = CharField(null=True)
+class KanonBase(BaseModel):
+    name: str = Field(nullable=False, max_length=512)
 
 
-def init_db():
-    db_proxy.initialize(db)
-    router = Router(db, migrate_dir=MIGRATIONS_DIR)
-    with db_proxy:
-        router.run()
+class Kanon(KanonBase, table=True):
+    id: Optional[int] = Field(primary_key=True, default=None)
+
+
+class KanonCreate(KanonBase):
+    pass
+
+
+class KanonPublic(KanonBase):
+    id: int
+
+
+class KanonUpdate(SQLModel):
+    name: Optional[str] = None
+
+
+# def get_session():
+#     with Session(engine) as session:
+#         yield session
+
+
+async def get_session() -> AsyncSession:
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        yield session
