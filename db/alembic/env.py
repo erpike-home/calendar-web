@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from conf import DB_CONNECTION_STR
 from sqlmodel import SQLModel
-from db.models import Kanon
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

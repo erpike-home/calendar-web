@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from sqlmodel import Session
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from db.models import KanonPublic, get_session, KanonCreate, Kanon

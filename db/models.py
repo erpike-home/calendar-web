@@ -52,12 +52,7 @@ class KanonUpdate(SQLModel):
     name: Optional[str] = None
 
 
-# def get_session():
-#     with Session(engine) as session:
-#         yield session
-
-
 async def get_session() -> AsyncSession:
-    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session = sessionmaker(engine, class_=AsyncSession)
     async with async_session() as session:
         yield session

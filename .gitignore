@@ -83,4 +83,4 @@ venv.bak/
 pytestdebug.log
 .coverage
 
-.sqlite
+*.sqlite
