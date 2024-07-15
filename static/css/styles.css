@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'Church-Slavonic';
+    src: url('../fonts/TriodionUnicode.otf');
+}
+
+.slavonic {
+    font-family: 'Church-Slavonic';
+}
