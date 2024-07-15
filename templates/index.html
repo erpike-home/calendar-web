@@ -8,7 +8,11 @@
     <h2>Список канонів:</h2>
     <ul>
         {% for kanon in kanons %}
-            <li>{{ kanon.name }}</li>
+            <li><b class="slavonic">{{ kanon.name }}</b> <i class="slavonic"> {{ kanon.slavonic_name }} </i></li>
         {% endfor %}
+        <li><b class="slavonic">Кано́н преподо́бных, глас 4. Творе́ние Феофа́ново.</b> <i class="slavonic"> КанНнъ прпdбныхъ. Творенiе ѳеофаново. Гласъ д7. </i></li>
+
+        <li><b class="slavonic">Канѡ́нъ прпⷣбныхъ. Творе́нїе ѳеофа́ново. Гла́съ д҃..</b> <i class="slavonic"> КанНнъ с™агѡ великом§ника и3 цэли1телz пантелеи1мона. </i></li>
+        <li><b class="slavonic">Канѡ́нъ прпⷣбныхъ</b> <i class="slavonic"> КанНнъ с™агѡ великом§ника и3 цэли1телz пантелеи1мона. </i></li>
     </ul>
 {% endblock %}

@@ -65,6 +65,7 @@ class BaseModel(SQLModel, table=False):
 
 class KanonDefault(SQLModel):
     name: str = Field(nullable=False, max_length=512)
+    slavonic_name: Optional[str] = Field(None, nullable=True, max_length=512)
 
 
 class KanonPublic(KanonDefault):
@@ -80,7 +81,7 @@ class KanonCreate(KanonDefault):
 
 
 class KanonUpdate(KanonDefault):
-    pass
+    name: Optional[str] = None
 
 
 async def get_session() -> AsyncSession:

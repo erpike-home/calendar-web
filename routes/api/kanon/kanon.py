@@ -28,10 +28,11 @@ async def get_kanon(*, session: AsyncSession = Depends(get_session)):
     return await Kanon.list(session)
 
 
-@router.put("/{item_id}", response_model=KanonPublic)
+@router.patch("/{item_id}", response_model=KanonPublic)
 async def update_kanon(item_id: int, updated: KanonUpdate, *, session: AsyncSession = Depends(get_session)):
+    updated = updated.model_dump(exclude_unset=True)
     kanon = await check_if_exists(session, Kanon, item_id)
-    kanon = await kanon.update(session, name=updated.name)
+    kanon = await kanon.update(session, **updated)
     return kanon
 
 
