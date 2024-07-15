@@ -8,12 +8,14 @@ chorus - припев
 """
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import Field, SQLModel, func
+from sqlmodel import Field, SQLModel, text, Column, DateTime
 from sqlmodel.ext.asyncio.session import AsyncSession
+from typing import Optional
+
+
 from conf import DB_CONNECTION_STR
 
 
@@ -21,22 +23,41 @@ engine = create_async_engine(DB_CONNECTION_STR)
 
 
 class BaseModel(SQLModel, table=False):
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
-    modified_at: datetime = Field(
-        default_factory=datetime.utcnow,
-        nullable=False,
-        sa_column_kwargs={"onupdate": func.now(), "default": func.now()},
+    created_at: Optional[datetime] = Field(
+        default_factory=lambda: datetime.utcnow(),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=text("CURRENT_TIMESTAMP"),
+        )
+    )
+    modified_at: Optional[datetime] = Field(
+        default_factory=lambda: datetime.utcnow(),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=text("CURRENT_TIMESTAMP"),
+        )
     )
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+    def update(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v) if hasattr(self, k) else None
+        self.modified_at = datetime.utcnow()
 
 
-class KanonBase(BaseModel):
+class KanonBase(SQLModel):
     name: str = Field(nullable=False, max_length=512)
 
 
-class Kanon(KanonBase, table=True):
+class KanonPublic(KanonBase):
+    id: int
+
+
+class Kanon(BaseModel, KanonBase, table=True):
     id: Optional[int] = Field(primary_key=True, default=None)
 
 
@@ -44,12 +65,8 @@ class KanonCreate(KanonBase):
     pass
 
 
-class KanonPublic(KanonBase):
-    id: int
-
-
-class KanonUpdate(SQLModel):
-    name: Optional[str] = None
+class KanonUpdate(KanonBase):
+    pass
 
 
 async def get_session() -> AsyncSession:

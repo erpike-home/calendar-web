@@ -11,6 +11,7 @@ peewee-async = "*"
 sqlmodel = "*"
 alembic = "*"
 aiosqlite = "*"
+asyncmy = "*"
 
 [dev-packages]
 
