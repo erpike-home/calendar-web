@@ -2,12 +2,10 @@
 
 {% block title %}Home{% endblock %}
 
-{% block header_title %}Welcome to My Website{% endblock %}
+{% block header_title %}Вечірні канони{% endblock %}
 
 {% block content %}
-    <h2>Welcome to the Index Page</h2>
-    <p>This is the index page of my website.</p>
-    <p>Kanons list:</p>
+    <h2>Список канонів:</h2>
     <ul>
         {% for kanon in kanons %}
             <li>{{ kanon.name }}</li>
