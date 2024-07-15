@@ -1,16 +1,15 @@
+from typing import Type
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from db.models import KanonPublic, get_session, KanonCreate, Kanon, KanonUpdate
-
+from db.models import KanonPublic, get_session, KanonCreate, Kanon, KanonUpdate, BaseModel
 
 router = APIRouter(tags=["api/kanon"], prefix="/api/kanon")
 
 
-async def check_if_exists(session, item_id):
-    res = await session.exec(select(Kanon).where(Kanon.id == item_id))
-    if not (item := res.one_or_none()):
+async def check_if_exists(session: AsyncSession, klass: Type[BaseModel], item_id: int):
+    if not (item := await klass.get_by_id(session, item_id)):
         raise HTTPException(status_code=404, detail="Kanon not found")
     return item
 
@@ -26,21 +25,18 @@ async def create_kanon(*, session: AsyncSession = Depends(get_session), kanon: K
 
 @router.get("/", response_model=list[Kanon])
 async def get_kanon(*, session: AsyncSession = Depends(get_session)):
-    return (await session.exec(select(Kanon))).all()
+    return await Kanon.list(session)
 
 
 @router.put("/{item_id}", response_model=KanonPublic)
 async def update_kanon(item_id: int, updated: KanonUpdate, *, session: AsyncSession = Depends(get_session)):
-    kanon = await check_if_exists(session, item_id)
-    kanon.update(name=updated.name)
-    await session.commit()
-    await session.refresh(kanon)
+    kanon = await check_if_exists(session, Kanon, item_id)
+    kanon = await kanon.update(session, name=updated.name)
     return kanon
 
 
 @router.delete("/{item_id}")
 async def delete_kanon(item_id: int, *, session: AsyncSession = Depends(get_session)):
-    kanon = await check_if_exists(session, item_id)
-    await session.delete(kanon)
-    await session.commit()
+    kanon = await check_if_exists(session, Kanon, item_id)
+    await kanon.delete(session)
     return {"message": "Kanon successfully deleted"}

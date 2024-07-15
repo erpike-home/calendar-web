@@ -7,4 +7,10 @@
 {% block content %}
     <h2>Welcome to the Index Page</h2>
     <p>This is the index page of my website.</p>
+    <p>Kanons list:</p>
+    <ul>
+        {% for kanon in kanons %}
+            <li>{{ kanon.name }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

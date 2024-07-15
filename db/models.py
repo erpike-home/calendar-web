@@ -11,10 +11,9 @@ from datetime import datetime
 
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import Field, SQLModel, text, Column, DateTime
+from sqlmodel import Field, SQLModel, text, Column, DateTime, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from typing import Optional
-
+from typing import Optional, List, Sequence
 
 from conf import DB_CONNECTION_STR
 
@@ -43,29 +42,44 @@ class BaseModel(SQLModel, table=False):
     class Config:
         from_attributes = True
 
-    def update(self, **kwargs):
+    async def update(self, session: AsyncSession, **kwargs) -> "BaseModel":
         for k, v in kwargs.items():
             setattr(self, k, v) if hasattr(self, k) else None
         self.modified_at = datetime.utcnow()
+        await session.commit()
+        await session.refresh(self)
+        return self
+
+    async def delete(self, session: AsyncSession) -> None:
+        await session.delete(self)
+        await session.commit()
+
+    @classmethod
+    async def list(cls, session: AsyncSession) -> Sequence["BaseModel"]:
+        return (await session.exec(select(cls))).all()
+
+    @classmethod
+    async def get_by_id(cls, session: AsyncSession, pk: int) -> "BaseModel":
+        return (await session.exec(select(cls).where(cls.id == pk))).one_or_none()
 
 
-class KanonBase(SQLModel):
+class KanonDefault(SQLModel):
     name: str = Field(nullable=False, max_length=512)
 
 
-class KanonPublic(KanonBase):
+class KanonPublic(KanonDefault):
     id: int
 
 
-class Kanon(BaseModel, KanonBase, table=True):
+class Kanon(BaseModel, KanonDefault, table=True):
     id: Optional[int] = Field(primary_key=True, default=None)
 
 
-class KanonCreate(KanonBase):
+class KanonCreate(KanonDefault):
     pass
 
 
-class KanonUpdate(KanonBase):
+class KanonUpdate(KanonDefault):
     pass
 
 
